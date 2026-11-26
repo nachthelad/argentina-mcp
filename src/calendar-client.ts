@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export class CalendarError extends Error {
   constructor(
-    readonly code: 'coverage_unavailable' | 'calendar_origin_unavailable' | 'calendar_origin_invalid',
+    readonly code: 'coverage_unavailable' | 'calendar_origin_unavailable' | 'calendar_origin_invalid' | 'unsupported_court_scope',
     message: string,
   ) {
     super(message)
@@ -46,9 +46,15 @@ export function createCalendarClient(options: {
 
     const body: unknown = await response.json().catch(() => undefined)
     if (response.status === 400) {
-      const error = z.object({ error: z.object({ message: z.string() }) }).safeParse(body)
-      const coverage = error.success && /^No holiday data for (\d{4})\./.exec(error.data.error.message)
-      if (coverage) throw new CalendarError('coverage_unavailable', `Holiday data is unavailable for ${coverage[1]}.`)
+      const parsedError = z.object({ error: z.object({ code: z.string().optional(), message: z.string() }) }).safeParse(body)
+      if (parsedError.success) {
+        const { code, message } = parsedError.data.error
+        if (code === 'unsupported_court_scope') {
+          throw new CalendarError(code, 'The calendar does not support that court scope for the selected jurisdiction.')
+        }
+        const coverage = /^No holiday data for (\d{4})\./.exec(message)
+        if (coverage) throw new CalendarError('coverage_unavailable', `Holiday data is unavailable for ${coverage[1]}.`)
+      }
     }
     const parsed = schema.safeParse(body)
     if (!response.ok || !parsed.success) {

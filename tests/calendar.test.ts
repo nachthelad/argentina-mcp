@@ -61,7 +61,9 @@ describe('public Streamable HTTP MCP', () => {
     const upstream = calendarFixture()
     await withMcp(upstream, async (client) => {
       const { tools } = await client.listTools()
-      expect(tools.map((tool) => tool.name)).toEqual(['is_business_day', 'list_holidays'])
+      expect(tools.map((tool) => tool.name)).toEqual([
+        'is_business_day', 'list_holidays', 'next_business_day', 'add_business_days', 'judicial_deadline',
+      ])
       expect(tools.every((tool) => tool.annotations?.readOnlyHint && tool.outputSchema)).toBe(true)
 
       const banking = await client.callTool({ name: 'is_business_day', arguments: bankingInput })
@@ -90,6 +92,65 @@ describe('public Streamable HTTP MCP', () => {
       const result = await client.callTool({ name: 'is_business_day', arguments: bankingInput })
       expect(result.isError).toBe(true)
       expect(result.content).toEqual([expect.objectContaining({ text: expect.stringContaining(code) })])
+    })
+  })
+
+  it('maps the next business day and signed offsets without changing their citations', async () => {
+    const upstream = vi.fn<typeof fetch>(async (input) => {
+      const url = new URL(String(input))
+      const common = {
+        date: '2026-02-13', calendar: 'general', jurisdiction: 'AR',
+        source_url: law, legal_reference: 'Ley 27.399', sources: [lawSource],
+      }
+      if (url.pathname === '/v1/next-business-day') {
+        return Response.json({ ...common, next_business_day: '2026-02-18' })
+      }
+      expect(url.searchParams.get('days')).toBe('-1')
+      return Response.json({ ...common, days: -1, result: '2026-02-12' })
+    })
+    await withMcp(upstream, async (client) => {
+      const input = { date: '2026-02-13', jurisdiction: 'AR', calendar: 'general' }
+      const next = await client.callTool({ name: 'next_business_day', arguments: input })
+      const added = await client.callTool({ name: 'add_business_days', arguments: { ...input, days: -1 } })
+      expect(next.structuredContent).toMatchObject({ data: { ...input, next_date: '2026-02-18' }, sources: [lawSource] })
+      expect(added.structuredContent).toMatchObject({ data: { ...input, days: -1, result_date: '2026-02-12' }, sources: [lawSource] })
+    })
+  })
+
+  it('preserves the deadline scope and translates court recess reasons', async () => {
+    const upstream = vi.fn<typeof fetch>(async (input) => {
+      const url = new URL(String(input))
+      expect(url.pathname).toBe('/v1/judicial/deadline')
+      expect(url.searchParams.get('date')).toBe('2026-07-17')
+      if (url.searchParams.get('court_scope') === 'tsj_caba') {
+        return Response.json({ error: { code: 'unsupported_court_scope', message: 'Scope unsupported.' } }, { status: 400 })
+      }
+      const court = 'https://www.argentina.gob.ar/normativa/nacional/ley-17454-16547/actualizacion'
+      const recess = 'https://www.csjn.gov.ar/documentos/descargar?ID=159534'
+      return Response.json({
+        notification_date: '2026-07-17', days: 1, jurisdiction: 'AR-C', court_scope: 'national_federal_caba',
+        deadline: '2026-08-03',
+        skipped: [{ date: '2026-07-20', reasons: [{
+          kind: 'feria', date: '2026-07-20', name: 'Feria judicial de invierno', start: '2026-07-20', end: '2026-07-31',
+          source_url: recess, legal_reference: 'Acordada CSJN 11/2026',
+        }] }],
+        grace: { date: '2026-08-04', hours: 2, skipped: [], source_url: court, legal_reference: 'CPCCN, art. 124' },
+        source_url: court, legal_reference: 'CPCCN, art. 156',
+        sources: [{ role: 'deadline_rule', source_url: court, legal_reference: 'CPCCN, art. 156' }],
+      })
+    })
+    await withMcp(upstream, async (client) => {
+      const arguments_ = { notification_date: '2026-07-17', jurisdiction: 'AR-C', days: 1 }
+      const result = await client.callTool({ name: 'judicial_deadline', arguments: arguments_ })
+      expect(result.structuredContent).toMatchObject({
+        data: {
+          court_scope: 'national_federal_caba', deadline: '2026-08-03', grace: { hours: 2, date: '2026-08-04' },
+          skipped: [{ reasons: [{ kind: 'court_recess', legal_reference: 'Acordada CSJN 11/2026' }] }],
+        },
+      })
+      const unsupported = await client.callTool({ name: 'judicial_deadline', arguments: { ...arguments_, court_scope: 'tsj_caba' } })
+      expect(unsupported.isError).toBe(true)
+      expect(unsupported.content).toEqual([expect.objectContaining({ text: expect.stringContaining('unsupported_court_scope') })])
     })
   })
 })
