@@ -1,8 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.nachthelad/argentina-mcp",
-  "title": "Argentina MCP",
-  "description": "Argentine holidays, business days, judicial deadlines, and indexes (CER, UVA, UVI, and IPC) with official sources.",
+  "name": "ar.com.nachthelad/argentina-mcp",
+  "title": "Argentina Official Data: Holidays, Business Days & Indexes",
+  "description": "Holidays, business days, judicial deadlines and CER/UVA/UVI/IPC. Cites BCRA, INDEC, Boletín Oficial.",
   "version": "0.2.0",
   "repository": {
     "url": "https://github.com/nachthelad/argentina-mcp",
@@ -11,7 +11,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://argentina-mcp.vercel.app/mcp"
+      "url": "https://argentina-mcp.nachthelad.com.ar/mcp"
     }
   ]
 }
