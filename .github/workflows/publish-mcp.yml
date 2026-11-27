@@ -1,0 +1,35 @@
+name: Publish to MCP Registry
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      MCP_PUBLISHER_RELEASE: v1.8.16
+      MCP_PUBLISHER_SHA256: 6e2f799550cf843c6fd3350498d56cc49be3dc0af1e6237eb0e6435c7a9d5c05
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify release and install registry publisher
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "v$(jq -r .version server.json)"
+          test "$(jq -r .version server.json)" = "$(jq -r .version package.json)"
+          archive=mcp-publisher_linux_amd64.tar.gz
+          curl --fail --silent --show-error --location --output "$archive" \
+            "https://github.com/modelcontextprotocol/registry/releases/download/$MCP_PUBLISHER_RELEASE/$archive"
+          echo "$MCP_PUBLISHER_SHA256  $archive" | sha256sum --check
+          tar -xzf "$archive" mcp-publisher
+      - name: Publish remote server
+        run: |
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish

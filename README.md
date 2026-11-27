@@ -16,9 +16,27 @@ Usá `AR` para Nación, `AR-C` para CABA o `AR-B` para provincia de Buenos Aires
 
 Hay un límite de 60 solicitudes por minuto por IP. Si tu cliente recibe un HTTP 429, esperá los segundos indicados en `Retry-After`. Los clientes alojados pueden compartir una IP de salida.
 
+## Conectá tu cliente
+
+**Claude Desktop.** Abrí **Customize → Connectors**, agregá un conector remoto personalizado y pegá la URL del MCP. Elegí **No sign in** si Claude te pide configurar la autenticación. Podés pedirle que consulte si el 23 de marzo de 2026 fue hábil bancario en Argentina y que cite la fuente. [Guía de Claude](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
+
+**Cursor.** Agregá esta entrada en `.cursor/mcp.json` dentro del proyecto o en `~/.cursor/mcp.json` para usarla en todos tus proyectos. Probá pedirle que reste un día hábil general al 18 de febrero de 2026 en Nación. [Guía de Cursor](https://cursor.com/docs/mcp)
+
+```json
+{
+  "mcpServers": {
+    "argentina-mcp": {
+      "url": "https://argentina-mcp.vercel.app/mcp"
+    }
+  }
+}
+```
+
 ## Desarrollo local
 
 Con Node.js 22 y pnpm, corré `pnpm install` y `pnpm dev`. Para consultar datos, configurá `FERIADOS_API_BASE_URL` en `.env.local` con la URL de una instancia de feriados. Si usás el origen de Vercel, configurá también su credencial interna. Podés correr las pruebas con `pnpm test`.
 
 Para verificar las propiedades del calendario, levantá `feriados-ar-api` en el puerto 3001 y corré `pnpm test:properties`. Si la API escucha en otro puerto, configurá `FERIADOS_PROPERTY_ORIGIN` con su URL local.
+
+La [guía de operación](docs/operations.md) cubre el despliegue y la publicación en el registro oficial. El [diseño de monetización](docs/monetization.md) describe una etapa futura.
 Official Argentine public data over the Model Context Protocol.
