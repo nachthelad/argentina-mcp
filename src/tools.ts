@@ -1,5 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/server'
 import { CalendarError, type createCalendarClient } from './calendar-client.js'
+import { IndexError } from './index-client.js'
 import {
   businessDayInput, businessDayOutput, holidaysInput, holidaysOutput,
   originBusinessDay, originHolidays, toOriginCalendar, toPublicReason,
@@ -11,11 +12,11 @@ export function toolResult<T extends Record<string, unknown>>(value: T) {
   return { structuredContent: value, content: [{ type: 'text' as const, text: JSON.stringify(value) }] }
 }
 
-export async function calendarTool<T extends Record<string, unknown>>(run: () => Promise<T>) {
+export async function readTool<T extends Record<string, unknown>>(run: () => Promise<T>) {
   try {
     return toolResult(await run())
   } catch (error) {
-    if (!(error instanceof CalendarError)) throw error
+    if (!(error instanceof CalendarError) && !(error instanceof IndexError)) throw error
     return {
       isError: true,
       content: [{
@@ -40,7 +41,7 @@ export function registerCalendarTools(server: McpServer, read: ReturnType<typeof
     inputSchema: businessDayInput,
     outputSchema: businessDayOutput,
     annotations,
-  }, (input) => calendarTool(async () => {
+  }, (input) => readTool(async () => {
     const { source_url, legal_reference, sources, reasons, is_business_day } = await read(
       '/v1/is-business-day',
       { ...input, calendar: toOriginCalendar(input.calendar) },
@@ -62,7 +63,7 @@ export function registerCalendarTools(server: McpServer, read: ReturnType<typeof
     inputSchema: holidaysInput,
     outputSchema: holidaysOutput,
     annotations,
-  }, (input) => calendarTool(async () => {
+  }, (input) => readTool(async () => {
     const { source_url, legal_reference, sources, count, holidays } = await read(
       '/v1/holidays',
       { year: String(input.year), jurisdiction: input.jurisdiction },
@@ -87,7 +88,7 @@ export function registerCalendarTools(server: McpServer, read: ReturnType<typeof
     inputSchema: businessDayInput,
     outputSchema: nextDayOutput,
     annotations,
-  }, (input) => calendarTool(async () => {
+  }, (input) => readTool(async () => {
     const { next_business_day, source_url, legal_reference, sources } = await read(
       '/v1/next-business-day',
       { ...input, calendar: toOriginCalendar(input.calendar) },
@@ -102,7 +103,7 @@ export function registerCalendarTools(server: McpServer, read: ReturnType<typeof
     inputSchema: addDaysInput,
     outputSchema: addedDaysOutput,
     annotations,
-  }, (input) => calendarTool(async () => {
+  }, (input) => readTool(async () => {
     const { result, source_url, legal_reference, sources } = await read(
       '/v1/business-days/add',
       { ...input, calendar: toOriginCalendar(input.calendar), days: String(input.days) },
@@ -117,7 +118,7 @@ export function registerCalendarTools(server: McpServer, read: ReturnType<typeof
     inputSchema: deadlineInput,
     outputSchema: deadlineOutput,
     annotations,
-  }, ({ notification_date, days, jurisdiction, court_scope }) => calendarTool(async () => {
+  }, ({ notification_date, days, jurisdiction, court_scope }) => readTool(async () => {
     const { source_url, legal_reference, sources, grace, skipped, ...deadline } = await read(
       '/v1/judicial/deadline',
       { date: notification_date, days: String(days), jurisdiction, ...(court_scope ? { court_scope } : {}) },

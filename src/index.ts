@@ -1,11 +1,14 @@
 import { Hono } from 'hono'
 import { createMcpHandler } from 'mcp-handler'
 import { createCalendarClient } from './calendar-client.js'
+import { createIndexClient } from './index-client.js'
+import { registerIndexTools } from './index-tools.js'
 import { createRateLimiter } from './rate-limit.js'
 import { registerCalendarTools } from './tools.js'
 
 export function createApp(options: {
   calendarClient?: ReturnType<typeof createCalendarClient>
+  indexClient?: ReturnType<typeof createIndexClient>
   retryAfter?: ReturnType<typeof createRateLimiter>
 } = {}) {
   const app = new Hono()
@@ -13,13 +16,20 @@ export function createApp(options: {
     baseUrl: process.env.FERIADOS_API_BASE_URL,
     secret: process.env.FERIADOS_API_INTERNAL_SECRET,
   })
+  const indexClient = options.indexClient ?? createIndexClient({
+    baseUrl: process.env.INDICES_API_BASE_URL,
+    secret: process.env.INDICES_API_INTERNAL_SECRET,
+  })
   const retryAfter = options.retryAfter ?? createRateLimiter({
     url: process.env.KV_REST_API_URL,
     token: process.env.KV_REST_API_TOKEN,
     environment: process.env.VERCEL_ENV,
   })
-  const handler = createMcpHandler((server) => registerCalendarTools(server, calendarClient), {
-    serverInfo: { name: 'argentina-mcp', version: '0.1.0' },
+  const handler = createMcpHandler((server) => {
+    registerCalendarTools(server, calendarClient)
+    registerIndexTools(server, indexClient)
+  }, {
+    serverInfo: { name: 'argentina-mcp', version: '0.2.0' },
   })
 
   app.get('/health', (context) => context.json({ status: 'ok' }))

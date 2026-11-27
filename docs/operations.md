@@ -1,6 +1,6 @@
 # Operations
 
-`argentina-mcp` serves the MCP SDK over stateless Streamable HTTP at `/mcp`. `/health` confirms that the application is running. The production server calls feriados-ar-api directly using the service credential in `FERIADOS_API_INTERNAL_SECRET` and requests `include_evidence=true`.
+`argentina-mcp` serves the MCP SDK over stateless Streamable HTTP at `/mcp`. `/health` confirms that the application is running. The production server calls feriados-ar-api directly using `FERIADOS_API_INTERNAL_SECRET` and requests `include_evidence=true`. It calls indices-ar-api directly using `INDICES_API_INTERNAL_SECRET` on read GET routes.
 
 Every successful tool response includes `data`, `source_url`, `legal_reference`, and `sources` in structured content and as JSON text. Each source identifies its role, official URL, and legal reference where applicable. Judicial results identify their court scope. The national calendar excludes recesses specific to federal courts outside the documented coverage.
 

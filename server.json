@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.nachthelad/argentina-mcp",
   "title": "Argentina MCP",
-  "description": "Argentine holidays, business days, and judicial deadlines with official sources.",
-  "version": "0.1.0",
+  "description": "Argentine holidays, business days, judicial deadlines, and indexes (CER, UVA, UVI, and IPC) with official sources.",
+  "version": "0.2.0",
   "repository": {
     "url": "https://github.com/nachthelad/argentina-mcp",
     "source": "github"
