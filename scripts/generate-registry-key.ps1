@@ -2,22 +2,28 @@
 # Requires Windows PowerShell 5.1. Prefers OpenSSL 3 from Git for Windows.
 # If that openssl is missing or cannot do Ed25519, falls back to Node.js.
 #
-# Writes the 64-character hex seed to $HOME\.mcp-registry\argentina-mcp.key
-# and prints only the Cloudflare TXT value plus the GitHub secret command.
-# The TXT name in the nachthelad.com.ar zone is @ (the apex). Do not use
-# _mcp-auth or any other selector. This script never prints the private key.
-# It refuses to overwrite an existing key file.
+# Writes the 64-character hex seed to $HOME\.mcp-registry\ignacioventura.key
+# and prints the TXT value for the apex of ignacioventura.com.ar plus the
+# GitHub secret command. The TXT name in the ignacioventura.com.ar zone is
+# @ (the apex). Do not use _mcp-auth or any other selector. This script
+# never prints the private key. It refuses to overwrite an existing
+# ignacioventura.key.
 #
-# The gh redirection works in cmd.exe and Git Bash. PowerShell does not
-# support "<"; from PowerShell use:
-#   gh secret set MCP_REGISTRY_PRIVATE_KEY --body-file "$HOME\.mcp-registry\argentina-mcp.key"
+# It does not read or write $HOME\.mcp-registry\argentina-mcp.key. That file
+# is the nachthelad.com.ar seed and is still required to deprecate
+# ar.com.nachthelad/argentina-mcp 0.2.0.
+#
+# This gh build has no --body-file flag, and PowerShell does not treat "<"
+# as input redirection. Set the secret with:
+#   gh secret set MCP_REGISTRY_PRIVATE_KEY --body (Get-Content "$HOME\.mcp-registry\ignacioventura.key" -Raw).Trim()
 
 #Requires -Version 5.1
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
 $KeyDirectory = Join-Path $HOME '.mcp-registry'
-$KeyFile = Join-Path $KeyDirectory 'argentina-mcp.key'
+# argentina-mcp.key is the nachthelad.com.ar seed. Leave that file alone.
+$KeyFile = Join-Path $KeyDirectory 'ignacioventura.key'
 
 function Resolve-OpenSsl {
     $candidates = @()
@@ -154,5 +160,6 @@ try {
     # The seed is already outside the repo. ACL tightening is best-effort.
 }
 
+Write-Output 'Add this TXT record at @ (the apex of ignacioventura.com.ar):'
 Write-Output ('v=MCPv1; k=ed25519; p=' + $pair.Public)
-Write-Output ('gh secret set MCP_REGISTRY_PRIVATE_KEY < "' + $KeyFile + '"')
+Write-Output 'gh secret set MCP_REGISTRY_PRIVATE_KEY --body (Get-Content "$HOME\.mcp-registry\ignacioventura.key" -Raw).Trim()'

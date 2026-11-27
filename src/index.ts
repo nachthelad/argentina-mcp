@@ -29,7 +29,7 @@ export function createApp(options: {
     registerCalendarTools(server, calendarClient)
     registerIndexTools(server, indexClient)
   }, {
-    serverInfo: { name: 'argentina-mcp', version: '0.2.0' },
+    serverInfo: { name: 'argentina-mcp', version: '0.2.1' },
   })
 
   app.get('/health', (context) => context.json({ status: 'ok' }))

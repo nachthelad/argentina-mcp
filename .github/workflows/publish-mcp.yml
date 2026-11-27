@@ -42,5 +42,5 @@ jobs:
             echo "MCP_REGISTRY_PRIVATE_KEY must be a 64-character hex Ed25519 seed" >&2
             exit 1
           fi
-          ./mcp-publisher login dns --domain nachthelad.com.ar --private-key "$key"
+          ./mcp-publisher login dns --domain ignacioventura.com.ar --private-key "$key"
           ./mcp-publisher publish

@@ -2,7 +2,7 @@
 
 Servidor MCP público para consultar datos oficiales de Argentina. Podés listar feriados, consultar y sumar días hábiles, calcular plazos judiciales, y leer índices de ajuste y el IPC. Cada respuesta incluye los enlaces oficiales que respaldan el dato.
 
-El endpoint usa Streamable HTTP. Podés conectarte sin cuenta ni API key en `https://argentina-mcp.nachthelad.com.ar/mcp`. `https://argentina-mcp.vercel.app/mcp` sigue respondiendo igual.
+El endpoint usa Streamable HTTP. Podés conectarte sin cuenta ni API key en `https://argentina-mcp.ignacioventura.com.ar/mcp`. `https://argentina-mcp.nachthelad.com.ar/mcp` y `https://argentina-mcp.vercel.app/mcp` siguen respondiendo igual.
 
 | Tool | Parámetros |
 | --- | --- |
@@ -28,7 +28,7 @@ Hay un límite de 60 solicitudes por minuto por IP. Si tu cliente recibe un HTTP
 {
   "mcpServers": {
     "argentina-mcp": {
-      "url": "https://argentina-mcp.nachthelad.com.ar/mcp"
+      "url": "https://argentina-mcp.ignacioventura.com.ar/mcp"
     }
   }
 }
