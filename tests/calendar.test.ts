@@ -57,12 +57,13 @@ async function withMcp(
 }
 
 describe('public Streamable HTTP MCP', () => {
-  it('discovers both tools and calls them with the SDK', async () => {
+  it('discovers the calendar tools and calls them with the SDK', async () => {
     const upstream = calendarFixture()
     await withMcp(upstream, async (client) => {
       const { tools } = await client.listTools()
       expect(tools.map((tool) => tool.name)).toEqual([
         'is_business_day', 'list_holidays', 'next_business_day', 'add_business_days', 'judicial_deadline',
+        'get_index', 'adjust_amount_by_index',
       ])
       expect(tools.every((tool) => tool.annotations?.readOnlyHint && tool.outputSchema)).toBe(true)
 
