@@ -18,7 +18,7 @@ Hay un límite de 60 solicitudes por minuto por IP. Si tu cliente recibe un HTTP
 
 ## Conectá tu cliente
 
-**Claude Desktop.** Abrí **Customize → Connectors**, agregá un conector remoto personalizado y pegá la URL del MCP. Elegí **No sign in** si Claude te pide configurar la autenticación. Podés pedirle que consulte si el 23 de marzo de 2026 fue hábil bancario en Argentina y que cite la fuente. [Guía de Claude](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
+**Claude Desktop.** En **Plugins → Agregar**, elegí **Agregar conector personalizado**, pegá la URL del MCP y seleccioná **Sin inicio de sesión**. Si tu versión muestra **Personalización → Conectores**, encontrás la opción ahí. Podés pedirle que consulte si el 23 de marzo de 2026 fue hábil bancario en Argentina y que cite la fuente. [Guía de Claude](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
 
 **Cursor.** Agregá esta entrada en `.cursor/mcp.json` dentro del proyecto o en `~/.cursor/mcp.json` para usarla en todos tus proyectos. Probá pedirle que reste un día hábil general al 18 de febrero de 2026 en Nación. [Guía de Cursor](https://cursor.com/docs/mcp)
 
