@@ -39,4 +39,8 @@ Con Node.js 22 y pnpm, corré `pnpm install` y `pnpm dev`. Para consultar datos,
 Para verificar las propiedades del calendario, levantá `feriados-ar-api` en el puerto 3001 y corré `pnpm test:properties`. Si la API escucha en otro puerto, configurá `FERIADOS_PROPERTY_ORIGIN` con su URL local.
 
 La [guía de operación](docs/operations.md) cubre el despliegue y la publicación en el registro oficial. El [diseño de monetización](docs/monetization.md) describe una etapa futura.
-Official Argentine public data over the Model Context Protocol.
+
+## Licencia
+
+MIT. Mirá [LICENSE](LICENSE).
+
